@@ -39,7 +39,7 @@ const config: IJobConfig = {
   // run the job directly, directly, after it has been initialized
   runOnInit: true,
   // s. https://github.com/node-schedule/node-schedule#cron-style-scheduling
-  time: "42 * * * *",
+  time: "42 * * * * *",
 };
 
 export default config;
