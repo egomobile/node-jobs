@@ -113,25 +113,23 @@ export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>
 function createJobObject(config: IJobConfig, file: string, timezone: Nilable<string>): IJob {
     const onTick = asAsync(config.onTick);
 
-    let id: string | null = null;
+    let id: Nilable<string> = null;
 
     const callback: scheduler.JobCallback = (time) => {
         if (id !== null) {
             return;
         }
 
-        id = '';  // keep sure we have a non-null value now
+        id = undefined;  // keep sure we have a non-null value now
 
         (async () => {
             id = `${time.valueOf()}-${crypto.randomBytes(16).toString('hex')}`;
 
-            const context: IJobExecutionContext = {
+            await onTick({
                 file,
                 id,
                 time
-            };
-
-            await onTick(context);
+            });
         })().catch((error) => {
             console.error('[ERROR]', '@egomobile/jobs', error);
         }).finally(() => {
@@ -194,7 +192,7 @@ function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) 
     };
 }
 
-function loadJobConfig(fullPath: string, stats: fs.Stats, filter: LoadAndStartJobsFileFilter): IJobConfig | void | undefined | null {
+function loadJobConfig(fullPath: string, stats: fs.Stats, filter: LoadAndStartJobsFileFilter): Nilable<IJobConfig> | void {
     if (!stats.isFile()) {
         return; // no file
     }
@@ -209,7 +207,7 @@ function loadJobConfig(fullPath: string, stats: fs.Stats, filter: LoadAndStartJo
     const moduleOrObject = require(fullPath);
 
     // first try 'default' export
-    let config: IJobConfig | null | undefined = moduleOrObject.default;
+    let config: Nilable<IJobConfig> = moduleOrObject.default;
     if (!config) {
         config = moduleOrObject;  // now try CommonJS
     }
