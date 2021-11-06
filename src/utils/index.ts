@@ -17,7 +17,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import scheduler from 'node-schedule';
-import type { IJob, IJobConfig, IJobExecutionContext, Nilable } from '../types';
+import type { IJob, IJobConfig, Nilable } from '../types';
 import { asAsync } from './internal';
 
 /**
