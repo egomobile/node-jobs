@@ -149,7 +149,7 @@ function createJobObject(config: IJobConfig, file: string, timezone: Nilable<str
     const newJob: IJob = {
         baseJob: undefined!,
         dispose: () => {
-            baseJob.cancel();
+            baseJob?.cancel();
 
             baseJob = null;
         }
