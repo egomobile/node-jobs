@@ -14,13 +14,23 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * An object that can be disposed.
+ */
+export interface IDisposable {
+    /**
+     * Frees all resources of that object.
+     */
+    dispose(): any;
+}
+
+/**
  * A job instance.
  */
-export interface IJob {
+export interface IJob extends IDisposable {
     /**
      * The base object that represents the job.
      */
-    baseJob: any;
+    readonly baseJob: any;
 }
 
 /**

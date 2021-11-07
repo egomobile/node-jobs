@@ -17,7 +17,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import scheduler from 'node-schedule';
-import type { IJob, IJobConfig, Nilable } from '../types';
+import type { IJob, IJobConfig, JobAction, Nilable } from '../types';
 import { asAsync } from './internal';
 
 /**
@@ -111,7 +111,7 @@ export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>
 
 
 function createJobObject(config: IJobConfig, file: string, timezone: Nilable<string>): IJob {
-    const onTick = asAsync(config.onTick);
+    const onTick = asAsync<JobAction>(config.onTick);
 
     let id: Nilable<string> = null;
 
@@ -141,14 +141,28 @@ function createJobObject(config: IJobConfig, file: string, timezone: Nilable<str
         callback(new Date());
     }
 
-    const baseJob = scheduler.scheduleJob({
+    let baseJob: Nilable<scheduler.Job> = scheduler.scheduleJob({
         rule: config.time,
         tz: (config.timezone || timezone) || 'UTC'
     }, callback);
 
-    return {
-        baseJob
+    const newJob: IJob = {
+        baseJob: undefined!,
+        dispose: () => {
+            baseJob.cancel();
+
+            baseJob = null;
+        }
     };
+
+    // newJob.baseJob
+    Object.defineProperty(newJob, 'baseJob', {
+        get: () => baseJob,
+        configurable: true,
+        enumerable: true
+    });
+
+    return newJob;
 }
 
 function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) {
