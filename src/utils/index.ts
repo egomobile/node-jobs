@@ -21,7 +21,7 @@ import type { IJob, IJobConfig, JobAction, Nilable } from '../types';
 import { asAsync } from './internal';
 
 /**
- * Options for 'loadAndStartJobs()' function.
+ * Options for 'loadAndStartJobs()' and 'loadAndStartJobsSync()' functiona.
  */
 export interface ILoadAndStartJobsOptions {
     /**
@@ -44,7 +44,7 @@ export interface ILoadAndStartJobsOptions {
 }
 
 /**
- * A file filter for 'ILoadNatsListenersOptions' options.
+ * A file filter for 'ILoadAndStartJobsOptions' options.
  *
  * @param {string} name The base name of the file.
  * @param {string} fullPath The full path of the file to check.
