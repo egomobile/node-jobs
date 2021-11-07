@@ -36,7 +36,7 @@ const onTick: JobAction = async ({ file, time }: IJobExecutionContext) => {
 const config: IJobConfig = {
   onTick,
 
-  // run the job directly, directly, after it has been initialized
+  // run the job directly, after it has been initialized
   runOnInit: true,
   // s. https://github.com/node-schedule/node-schedule#cron-style-scheduling
   time: "42 * * * * *",
@@ -79,7 +79,7 @@ main().catch(console.error);
 
 The module makes use of:
 
-- [node-schedule](https://github.com/node-schedule)
+- [node-schedule](https://github.com/node-schedule/node-schedule)
 
 ## Documentation
 

@@ -1,6 +1,6 @@
 # Change Log (@egomobile/jobs)
 
-## 0.2.1
+## 0.2.2
 
 - make [IJob](https://egomobile.github.io/node-jobs/interfaces/IJob.html)
   disposable
