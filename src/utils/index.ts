@@ -65,8 +65,7 @@ export type LoadAndStartJobsFileFilter = (name: string, fullPath: string) => boo
  * @returns {Promise<IJob[]>} The promise with the loaded and started jobs.
  */
 export async function loadAndStartJobs(options?: Nilable<ILoadAndStartJobsOptions>): Promise<IJob[]> {
-    const { dir, filter, timezone } = getLoadAndStartJobsOptions(options);
-    const debug = getLoadAndStartJobsDebug(options);
+    const { debug, dir, filter, timezone } = getLoadAndStartJobsOptions(options);
 
     const jobs: IJob[] = [];
 
@@ -101,8 +100,7 @@ export async function loadAndStartJobs(options?: Nilable<ILoadAndStartJobsOption
  * @returns {IJob[]} The loaded and started jobs.
  */
 export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>): IJob[] {
-    const { dir, filter, timezone } = getLoadAndStartJobsOptions(options);
-    const debug = getLoadAndStartJobsDebug(options);
+    const { debug, dir, filter, timezone } = getLoadAndStartJobsOptions(options);
 
     const jobs: IJob[] = [];
 
@@ -226,7 +224,13 @@ function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) 
         throw new TypeError('timezone must be a string');
     }
 
+    const debug = options?.debug || (() => { });
+    if (typeof debug !== 'function') {
+        throw new TypeError('debug must be a function');
+    }
+
     return {
+        debug,
         dir,
         filter,
         timezone
