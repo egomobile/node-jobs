@@ -54,7 +54,7 @@ export interface IWithWorkerOptions {
  * @see https://nodejs.org/dist./v12.12.0/docs/api/worker_threads.html
  */
 export function withWorker(options: IWithWorkerOptions): JobAction {
-    const { data } = options;
+    const { data, env } = options;
 
     let { filename } = options;
     if (typeof filename !== 'string') {
@@ -68,33 +68,29 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
     const name = String(options.name || filename);
 
     return () => new Promise<void>((resolve, reject) => {
-        try {
-            const worker = new Worker(filename, {
-                workerData: data,
-                env: process.env
-            });
+        const worker = new Worker(filename, {
+            workerData: data,
+            env: env || process.env
+        });
 
-            worker.once('error', (ex) => {
-                debug(`[ERROR] Worker ${name} failed: ${ex}`);
+        worker.once('error', (ex) => {
+            debug(`[ERROR] Worker ${name} failed: ${ex}`);
 
-                reject(ex);
-            });
-
-            worker.once('online', () => {
-                debug(`[ONLINE] Worker ${name} is running`);
-            });
-
-            worker.once('exit', (exitCode) => {
-                debug(`[EXIT] Worker ${name} exit with code ${exitCode}`);
-
-                if (exitCode === 0) {
-                    resolve();
-                } else {
-                    reject(new Error(`Worker ${name} exit with code ${exitCode}`));
-                }
-            });
-        } catch (ex) {
             reject(ex);
-        }
+        });
+
+        worker.once('online', () => {
+            debug(`[ONLINE] Worker ${name} is running`);
+        });
+
+        worker.once('exit', (exitCode) => {
+            debug(`[EXIT] Worker ${name} exit with code ${exitCode}`);
+
+            if (exitCode === 0) {
+                resolve();
+            } else {
+                reject(new Error(`Worker ${name} exit with code ${exitCode}`));
+            }
+        });
     });
 }

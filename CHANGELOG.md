@@ -1,6 +1,6 @@
 # Change Log (@egomobile/jobs)
 
-## 0.5.0
+## 0.5.1
 
 - add [withWorker() function](https://egomobile.github.io/node-jobs/modules.html#withWorker)
 
