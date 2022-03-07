@@ -1,5 +1,9 @@
 # Change Log (@egomobile/jobs)
 
+## 0.4.0
+
+- update to [node-schedule](https://www.npmjs.com/package/node-schedule) `2.1.0`
+
 ## 0.3.3
 
 - add [debug setting](https://egomobile.github.io/node-jobs/interfaces/ILoadAndStartJobsOptions.html#debug) to [ILoadAndStartJobsOptions interface](https://egomobile.github.io/node-jobs/interfaces/ILoadAndStartJobsOptions.html)
