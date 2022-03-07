@@ -131,10 +131,6 @@ function dumpJobConfig(config: IJobConfig) {
     return `runOnInit: ${config.runOnInit}, time: ${config.time}, timezone: ${config.timezone}`;
 }
 
-function getLoadAndStartJobsDebug(options: Nilable<ILoadAndStartJobsOptions>) {
-    return options?.debug || (() => { });
-}
-
 function createJobObject(config: IJobConfig, file: string, timezone: Nilable<string>): IJob {
     const onTick = asAsync<JobAction>(config.onTick);
 
