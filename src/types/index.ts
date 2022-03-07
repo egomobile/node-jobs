@@ -14,6 +14,11 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * A debug action.
+ */
+export type DebugAction = (message: any) => any;
+
+/**
  * An object that can be disposed.
  */
 export interface IDisposable {

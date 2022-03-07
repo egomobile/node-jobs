@@ -1,6 +1,6 @@
 # Change Log (@egomobile/jobs)
 
-## 0.3.2
+## 0.3.3
 
 - add [debug setting](https://egomobile.github.io/node-jobs/interfaces/ILoadAndStartJobsOptions.html#debug) to [ILoadAndStartJobsOptions interface](https://egomobile.github.io/node-jobs/interfaces/ILoadAndStartJobsOptions.html)
 

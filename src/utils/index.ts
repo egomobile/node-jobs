@@ -17,8 +17,22 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import scheduler from 'node-schedule';
-import type { IJob, IJobConfig, JobAction, Nilable } from '../types';
+import type { DebugAction, IJob, IJobConfig, JobAction, Nilable } from '../types';
 import { asAsync } from './internal';
+
+interface ICreateJobObjectOptions {
+    config: IJobConfig;
+    debug: DebugAction;
+    file: string;
+    timezone: Nilable<string>;
+}
+
+interface IJobConfigOptions {
+    debug: DebugAction;
+    filter: LoadAndStartJobsFileFilter;
+    fullPath: string;
+    stats: fs.Stats;
+}
 
 /**
  * Options for 'loadAndStartJobs()' and 'loadAndStartJobsSync()' functiona.
@@ -27,7 +41,7 @@ export interface ILoadAndStartJobsOptions {
     /**
      * A callback, which can be used to receive debug messages.
      */
-    debug?: Nilable<(msg: any) => any>;
+    debug?: Nilable<DebugAction>;
     /**
      * The directory, where the script files are stored. Default: Current working directory.
      */
@@ -76,12 +90,12 @@ export async function loadAndStartJobs(options?: Nilable<ILoadAndStartJobsOption
 
         const stats = await fs.promises.stat(fullPath);
 
-        const config = loadJobConfig(fullPath, stats, filter);
+        const config = loadJobConfig({ debug, filter, fullPath, stats });
         if (config) {
             debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
 
             jobs.push(
-                createJobObject(config, fullPath, timezone)
+                createJobObject({ config, debug, file: fullPath, timezone })
             );
         } else {
             debug(`[WARN] Found no config in ${fullPath}`);
@@ -111,12 +125,12 @@ export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>
 
         const stats = fs.statSync(fullPath);
 
-        const config = loadJobConfig(fullPath, stats, filter);
+        const config = loadJobConfig({ debug, filter, fullPath, stats });
         if (config) {
             debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
 
             jobs.push(
-                createJobObject(config, fullPath, timezone)
+                createJobObject({ config, debug, file: fullPath, timezone })
             );
         } else {
             debug(`[WARN] Found no config in ${fullPath}`);
@@ -127,11 +141,7 @@ export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>
     return jobs;
 }
 
-function dumpJobConfig(config: IJobConfig) {
-    return `runOnInit: ${config.runOnInit}, time: ${config.time}, timezone: ${config.timezone}`;
-}
-
-function createJobObject(config: IJobConfig, file: string, timezone: Nilable<string>): IJob {
+function createJobObject({ config, debug, file, timezone }: ICreateJobObjectOptions): IJob {
     const onTick = asAsync<JobAction>(config.onTick);
 
     let id: Nilable<string> = null;
@@ -159,7 +169,11 @@ function createJobObject(config: IJobConfig, file: string, timezone: Nilable<str
     };
 
     if (config.runOnInit) {
+        debug(`Run job in ${file} on init ...`);
+
         callback(new Date());
+
+        debug(`Job in ${file} executed on init`);
     }
 
     let baseJob: Nilable<scheduler.Job> = scheduler.scheduleJob({
@@ -184,6 +198,10 @@ function createJobObject(config: IJobConfig, file: string, timezone: Nilable<str
     });
 
     return newJob;
+}
+
+function dumpJobConfig(config: IJobConfig) {
+    return `runOnInit: ${config.runOnInit}, time: ${config.time}, timezone: ${config.timezone}`;
 }
 
 function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) {
@@ -233,14 +251,16 @@ function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) 
     };
 }
 
-function loadJobConfig(fullPath: string, stats: fs.Stats, filter: LoadAndStartJobsFileFilter): Nilable<IJobConfig> | void {
+function loadJobConfig({ debug, filter, fullPath, stats }: IJobConfigOptions): Nilable<IJobConfig> | void {
     if (!stats.isFile()) {
+        debug(`${fullPath} is no file`);
         return; // no file
     }
 
     const name = path.basename(fullPath);
 
     if (!filter(name, fullPath)) {
+        debug(`Filter does not match criteria for ${fullPath} (${name})`);
         return;  // filter criteria does not match
     }
 
@@ -249,7 +269,11 @@ function loadJobConfig(fullPath: string, stats: fs.Stats, filter: LoadAndStartJo
 
     // first try 'default' export
     let config: Nilable<IJobConfig> = moduleOrObject.default;
-    if (!config) {
+    if (config) {
+        debug(`Found config in 'default' of ${fullPath}`);
+    } else {
+        debug(`Try CommonJS to find config in ${fullPath} ...`);
+
         config = moduleOrObject;  // now try CommonJS
     }
 
