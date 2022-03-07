@@ -18,7 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import scheduler from 'node-schedule';
 import type { DebugAction, IJob, IJobConfig, JobAction, Nilable } from '../types';
-import { asAsync } from './internal';
+import { asAsync, getDebugActionSafe } from './internal';
 
 interface ICreateJobObjectOptions {
     config: IJobConfig;
@@ -238,10 +238,7 @@ function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) 
         throw new TypeError('timezone must be a string');
     }
 
-    const debug = options?.debug || (() => { });
-    if (typeof debug !== 'function') {
-        throw new TypeError('debug must be a function');
-    }
+    const debug = getDebugActionSafe(options?.debug);
 
     return {
         debug,
