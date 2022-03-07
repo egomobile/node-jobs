@@ -42,6 +42,10 @@ export interface IWithWorkerOptions {
      * A custom name for the worker script.
      */
     name?: Nilable<string>;
+    /**
+     * Directly resolve the promise, even if job has not been finished, yet.
+     */
+    noWait?: Nilable<boolean>;
 }
 
 /**
@@ -66,6 +70,7 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
 
     const debug = getDebugActionSafe(options.debug);
     const name = String(options.name || filename);
+    const shouldNotWait = !!options.noWait;
 
     return () => new Promise<void>((resolve, reject) => {
         const worker = new Worker(filename, {
@@ -87,10 +92,16 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
             debug(`[EXIT] Worker ${name} exit with code ${exitCode}`);
 
             if (exitCode === 0) {
-                resolve();
+                if (!shouldNotWait) {
+                    resolve();
+                }
             } else {
                 reject(new Error(`Worker ${name} exit with code ${exitCode}`));
             }
         });
+
+        if (shouldNotWait) {
+            resolve();
+        }
     });
 }
