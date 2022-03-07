@@ -1,5 +1,9 @@
 # Change Log (@egomobile/jobs)
 
+## 0.5.0
+
+- add [withWorker() function](https://egomobile.github.io/node-jobs/modules.html#withWorker)
+
 ## 0.4.0
 
 - update to [node-schedule](https://www.npmjs.com/package/node-schedule) `2.1.0`
