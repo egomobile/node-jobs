@@ -70,26 +70,26 @@ export async function loadAndStartJobs(options?: Nilable<ILoadAndStartJobsOption
 
     const jobs: IJob[] = [];
 
-    debug(`[loadAndStartJobs] Searching for job modules in ${dir} ...`);
+    debug(`Searching for job modules in ${dir} ...`);
     for (const item of await fs.promises.readdir(dir)) {
         const fullPath = path.join(dir, item);
-        debug(`[loadAndStartJobs] Found module in ${fullPath}`);
+        debug(`Found module in ${fullPath}`);
 
         const stats = await fs.promises.stat(fullPath);
 
         const config = loadJobConfig(fullPath, stats, filter);
         if (config) {
-            debug(`[loadAndStartJobs] Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
+            debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
 
             jobs.push(
                 createJobObject(config, fullPath, timezone)
             );
         } else {
-            debug(`[loadAndStartJobs] WARN: Found no config in ${fullPath}`);
+            debug(`[WARN] Found no config in ${fullPath}`);
         }
     }
 
-    debug(`[loadAndStartJobs] Found ${String(jobs.length)} job module(s)`);
+    debug(`Found ${String(jobs.length)} job module(s)`);
     return jobs;
 }
 
@@ -106,26 +106,26 @@ export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>
 
     const jobs: IJob[] = [];
 
-    debug(`[loadAndStartJobsSync] Searching for job modules in ${dir} ...`);
+    debug(`Searching for job modules in ${dir} ...`);
     for (const item of fs.readdirSync(dir)) {
         const fullPath = path.join(dir, item);
-        debug(`[loadAndStartJobsSync] Found module in ${fullPath}`);
+        debug(`Found module in ${fullPath}`);
 
         const stats = fs.statSync(fullPath);
 
         const config = loadJobConfig(fullPath, stats, filter);
         if (config) {
-            debug(`[loadAndStartJobsSync] Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
+            debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
 
             jobs.push(
                 createJobObject(config, fullPath, timezone)
             );
         } else {
-            debug(`[loadAndStartJobsSync] WARN: Found no config in ${fullPath}`);
+            debug(`[WARN] Found no config in ${fullPath}`);
         }
     }
 
-    debug(`[loadAndStartJobsSync] Found ${String(jobs.length)} job module(s)`);
+    debug(`Found ${String(jobs.length)} job module(s)`);
     return jobs;
 }
 
