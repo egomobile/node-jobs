@@ -1,6 +1,6 @@
 {
     "name": "@egomobile/jobs",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "description": "Easy to use job scheduler helpers.",
     "main": "lib/index.js",
     "engines": {

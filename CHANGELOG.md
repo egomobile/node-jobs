@@ -1,6 +1,6 @@
 # Change Log (@egomobile/jobs)
 
-## 0.6.0
+## 0.6.1
 
 - add [noWait setting](https://egomobile.github.io/node-jobs/interfaces/IJobConfig.html#noWait)
 

@@ -64,7 +64,7 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
     if (typeof filename !== 'string') {
         throw new TypeError('options.filename must be a string');
     }
-    if (path.isAbsolute(filename)) {
+    if (!path.isAbsolute(filename)) {
         filename = path.join(process.cwd(), filename);
     }
 
