@@ -96,7 +96,9 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
                     resolve();
                 }
             } else {
-                reject(new Error(`Worker ${name} exit with code ${exitCode}`));
+                if (!shouldNotWait) {
+                    reject(new Error(`Worker ${name} exit with code ${exitCode}`));
+                }
             }
         });
 
