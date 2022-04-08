@@ -81,6 +81,7 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
 
     return (context) => new Promise<void>(async (resolve, reject) => {
         if (!(await checkIfShouldTick(context))) {
+            resolve(undefined);
             return;
         }
 
