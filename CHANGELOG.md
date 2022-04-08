@@ -1,5 +1,10 @@
 # Change Log (@egomobile/jobs)
 
+## 0.7.0
+
+- add `checkIfShouldTick` setting to [IJobConfig](https://egomobile.github.io/node-jobs/interfaces/IJobConfig.html) and [IWithWorkerOptions](https://egomobile.github.io/node-jobs/interfaces/IWithWorkerOptions.html)
+- extend [DebugAction](https://egomobile.github.io/node-jobs/modules.html#DebugAction) with `icon` and `source` arguments
+
 ## 0.6.2
 
 - add [noWait setting](https://egomobile.github.io/node-jobs/interfaces/IJobConfig.html#noWait)

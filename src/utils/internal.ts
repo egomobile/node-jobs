@@ -1,4 +1,4 @@
-import { DebugAction, Nilable } from '../types';
+import type { CheckIfShouldTickPredicate, DebugAction, Nilable } from '../types';
 
 export function asAsync<TFunc extends Function = Function>(func: Function): TFunc {
     if (func.constructor.name === 'AsyncFunction') {
@@ -17,4 +17,12 @@ export function getDebugActionSafe(debug: Nilable<DebugAction>): DebugAction {
     }
 
     return debug;
+}
+
+export function toCheckIfShouldTickPredicateSafe(predicate: Nilable<CheckIfShouldTickPredicate>): CheckIfShouldTickPredicate {
+    if (predicate) {
+        return predicate;
+    } else {
+        return () => true;
+    }
 }

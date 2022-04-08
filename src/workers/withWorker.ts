@@ -15,13 +15,17 @@
 
 import path from 'path';
 import { Worker } from 'worker_threads';
-import type { DebugAction, JobAction, Nilable, Optional } from '../types';
-import { getDebugActionSafe } from '../utils/internal';
+import type { CheckIfShouldTickPredicate, DebugAction, JobAction, Nilable, Optional } from '../types';
+import { asAsync, getDebugActionSafe, toCheckIfShouldTickPredicateSafe } from '../utils/internal';
 
 /**
  * Options for 'withWorker()' function.
  */
 export interface IWithWorkerOptions {
+    /**
+     * Checks if worker should be executed or not.
+     */
+    checkIfShouldTick?: Nilable<CheckIfShouldTickPredicate>;
     /**
      * The data for the worker script.
      */
@@ -71,25 +75,32 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
     const debug = getDebugActionSafe(options.debug);
     const name = String(options.name || filename);
     const shouldNotWait = !!options.noWait;
+    const checkIfShouldTick = asAsync<CheckIfShouldTickPredicate>(
+        toCheckIfShouldTickPredicateSafe(options.checkIfShouldTick)
+    );
 
-    return () => new Promise<void>((resolve, reject) => {
+    return (context) => new Promise<void>(async (resolve, reject) => {
+        if (!(await checkIfShouldTick(context))) {
+            return;
+        }
+
         const worker = new Worker(filename, {
             workerData: data,
             env: env || process.env
         });
 
         worker.once('error', (ex) => {
-            debug(`[ERROR] Worker ${name} failed: ${ex}`);
+            debug(`Worker ${name} failed: ${ex}`, '❌');
 
             reject(ex);
         });
 
         worker.once('online', () => {
-            debug(`[ONLINE] Worker ${name} is running`);
+            debug(`Worker ${name} is running`, '🐞');
         });
 
         worker.once('exit', (exitCode) => {
-            debug(`[EXIT] Worker ${name} exit with code ${exitCode}`);
+            debug(`Worker ${name} exit with code ${exitCode}`, '🐞');
 
             if (exitCode === 0) {
                 if (!shouldNotWait) {

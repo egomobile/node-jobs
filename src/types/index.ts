@@ -14,9 +14,33 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A debug action.
+ * A function, which checks if a job should be executed.
+ *
+ * @param {IJobExecutionContext} context The context.
+ *
+ * @returns {any} A result which indicates if job should be executed or not.
  */
-export type DebugAction = (message: any) => any;
+export type CheckIfShouldTickPredicate = (context: IJobExecutionContext) => any;
+
+/**
+ * A debug action.
+ *
+ * @param {any} message The message.
+ * @param {DebugIcon} icon The icon.
+ * @param {Nilable<string>} [source] A string, which describes the source.
+ */
+export type DebugAction = (message: any, icon: DebugIcon, source?: Nilable<string>) => any;
+
+/**
+ * A possible value for a known debug icon.
+ *
+ * 🐞: debug
+ * ✅: success
+ * ℹ️: info
+ * ❌: error
+ * ⚠️: warning
+ */
+export type DebugIcon = '🐞' | '✅' | 'ℹ️' | '❌' | '⚠️';
 
 /**
  * An object that can be disposed.
@@ -42,6 +66,10 @@ export interface IJob extends IDisposable {
  * Configuration data for a job.
  */
 export interface IJobConfig {
+    /**
+     * Checks if 'onTick()' should be executed or not.
+     */
+    checkIfShouldTick?: Nilable<CheckIfShouldTickPredicate>;
     /**
      * The action, that is executed on a 'tick'.
      */

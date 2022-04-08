@@ -17,8 +17,8 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import scheduler from 'node-schedule';
-import type { DebugAction, IJob, IJobConfig, JobAction, Nilable } from '../types';
-import { asAsync, getDebugActionSafe } from './internal';
+import { CheckIfShouldTickPredicate, DebugAction, IJob, IJobConfig, IJobExecutionContext, JobAction, Nilable } from '../types';
+import { asAsync, getDebugActionSafe, toCheckIfShouldTickPredicateSafe } from './internal';
 
 interface ICreateJobObjectOptions {
     config: IJobConfig;
@@ -83,26 +83,26 @@ export async function loadAndStartJobs(options?: Nilable<ILoadAndStartJobsOption
 
     const jobs: IJob[] = [];
 
-    debug(`Searching for job modules in ${dir} ...`);
+    debug(`Searching for job modules in ${dir} ...`, '🐞', 'loadAndStartJobs()');
     for (const item of await fs.promises.readdir(dir)) {
         const fullPath = path.join(dir, item);
-        debug(`Found module in ${fullPath}`);
+        debug(`Found module in ${fullPath}`, '🐞', 'loadAndStartJobs()');
 
         const stats = await fs.promises.stat(fullPath);
 
         const config = loadJobConfig({ debug, filter, fullPath, stats });
         if (config) {
-            debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
+            debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`, '🐞', 'loadAndStartJobs()');
 
             jobs.push(
                 createJobObject({ config, debug, file: fullPath, timezone })
             );
         } else {
-            debug(`[WARN] Found no config in ${fullPath}`);
+            debug(`Found no config in ${fullPath}`, '⚠️', 'loadAndStartJobs()');
         }
     }
 
-    debug(`Found ${String(jobs.length)} job module(s)`);
+    debug(`Found ${String(jobs.length)} job module(s)`, '🐞', 'loadAndStartJobs()');
     return jobs;
 }
 
@@ -118,30 +118,33 @@ export function loadAndStartJobsSync(options?: Nilable<ILoadAndStartJobsOptions>
 
     const jobs: IJob[] = [];
 
-    debug(`Searching for job modules in ${dir} ...`);
+    debug(`Searching for job modules in ${dir} ...`, '🐞', 'loadAndStartJobsSync()');
     for (const item of fs.readdirSync(dir)) {
         const fullPath = path.join(dir, item);
-        debug(`Found module in ${fullPath}`);
+        debug(`Found module in ${fullPath}`, '🐞', 'loadAndStartJobsSync()');
 
         const stats = fs.statSync(fullPath);
 
         const config = loadJobConfig({ debug, filter, fullPath, stats });
         if (config) {
-            debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`);
+            debug(`Found following config in ${fullPath}: ${dumpJobConfig(config)}`, '🐞', 'loadAndStartJobsSync()');
 
             jobs.push(
                 createJobObject({ config, debug, file: fullPath, timezone })
             );
         } else {
-            debug(`[WARN] Found no config in ${fullPath}`);
+            debug(`Found no config in ${fullPath}`, '⚠️', 'loadAndStartJobsSync()');
         }
     }
 
-    debug(`Found ${String(jobs.length)} job module(s)`);
+    debug(`Found ${String(jobs.length)} job module(s)`, '🐞', 'loadAndStartJobsSync()');
     return jobs;
 }
 
 function createJobObject({ config, debug, file, timezone }: ICreateJobObjectOptions): IJob {
+    const checkIfShouldTick = asAsync<CheckIfShouldTickPredicate>(
+        toCheckIfShouldTickPredicateSafe(config.checkIfShouldTick)
+    );
     const onTick = asAsync<JobAction>(config.onTick);
 
     let id: Nilable<string> = null;
@@ -156,11 +159,15 @@ function createJobObject({ config, debug, file, timezone }: ICreateJobObjectOpti
         (async () => {
             id = `${time.valueOf()}-${crypto.randomBytes(16).toString('hex')}`;
 
-            await onTick({
+            const context: IJobExecutionContext = {
                 file,
                 id,
                 time
-            });
+            };
+
+            if (await checkIfShouldTick(context)) {
+                await onTick(context);
+            }
         })().catch((error) => {
             console.error('[ERROR]', '@egomobile/jobs', error);
         }).finally(() => {
@@ -169,11 +176,11 @@ function createJobObject({ config, debug, file, timezone }: ICreateJobObjectOpti
     };
 
     if (config.runOnInit) {
-        debug(`Run job in ${file} on init ...`);
+        debug(`Run job in ${file} on init ...`, '🐞', 'createJobObject()');
 
         callback(new Date());
 
-        debug(`Job in ${file} executed on init`);
+        debug(`Job in ${file} executed on init`, '🐞', 'createJobObject()');
     }
 
     let baseJob: Nilable<scheduler.Job> = scheduler.scheduleJob({
@@ -250,14 +257,14 @@ function getLoadAndStartJobsOptions(options: Nilable<ILoadAndStartJobsOptions>) 
 
 function loadJobConfig({ debug, filter, fullPath, stats }: IJobConfigOptions): Nilable<IJobConfig> | void {
     if (!stats.isFile()) {
-        debug(`${fullPath} is no file`);
+        debug(`${fullPath} is no file`, '🐞', 'loadJobConfig()');
         return; // no file
     }
 
     const name = path.basename(fullPath);
 
     if (!filter(name, fullPath)) {
-        debug(`Filter does not match criteria for ${fullPath} (${name})`);
+        debug(`Filter does not match criteria for ${fullPath} (${name})`, '🐞', 'loadJobConfig()');
         return;  // filter criteria does not match
     }
 
@@ -267,9 +274,9 @@ function loadJobConfig({ debug, filter, fullPath, stats }: IJobConfigOptions): N
     // first try 'default' export
     let config: Nilable<IJobConfig> = moduleOrObject.default;
     if (config) {
-        debug(`Found config in 'default' of ${fullPath}`);
+        debug(`Found config in 'default' of ${fullPath}`, '🐞', 'loadJobConfig()');
     } else {
-        debug(`Try CommonJS to find config in ${fullPath} ...`);
+        debug(`Try CommonJS to find config in ${fullPath} ...`, '🐞', 'loadJobConfig()');
 
         config = moduleOrObject;  // now try CommonJS
     }
