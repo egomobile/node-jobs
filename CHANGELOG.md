@@ -1,5 +1,12 @@
 # Change Log (@egomobile/jobs)
 
+## 0.8.0
+
+- [data](https://egomobile.github.io/node-jobs/interfaces/IWithWorkerOptions.html#data) can now contain or be a getter function for a worker based job
+- code cleanups and improvements
+- change `Nilable`, `Nullable` and `Optional` types to internal types
+- improve and extend debugging
+
 ## 0.7.1
 
 - add `checkIfShouldTick` setting to [IJobConfig](https://egomobile.github.io/node-jobs/interfaces/IJobConfig.html) and [IWithWorkerOptions](https://egomobile.github.io/node-jobs/interfaces/IWithWorkerOptions.html)

@@ -17,8 +17,9 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import scheduler from 'node-schedule';
-import { CheckIfShouldTickPredicate, DebugAction, IJob, IJobConfig, IJobExecutionContext, JobAction, Nilable } from '../types';
+import type { CheckIfShouldTickPredicate, DebugAction, IJob, IJobConfig, IJobExecutionContext, JobAction } from '../types';
 import { asAsync, getDebugActionSafe, toCheckIfShouldTickPredicateSafe } from './internal';
+import type { Nilable } from '../types/internal';
 
 interface ICreateJobObjectOptions {
     config: IJobConfig;
@@ -165,11 +166,21 @@ function createJobObject({ config, debug, file, timezone }: ICreateJobObjectOpti
                 time
             };
 
-            if (await checkIfShouldTick(context)) {
-                await onTick(context);
+            if (!(await checkIfShouldTick(context))) {
+                return;
             }
+
+            debug(`Executing job in ${file} ...`, '🐞', 'createJobObject(onTick)');
+
+            const start = new Date();
+            await onTick(context);
+            const end = new Date();
+
+            const duration = end.valueOf() - start.valueOf();
+
+            debug(`Executed job in ${file} after ${duration} ms`, '🐞', 'createJobObject(onTick)');
         })().catch((error) => {
-            console.error('[ERROR]', '@egomobile/jobs', error);
+            debug(error, '❌', 'createJobObject(onTick)');
         }).finally(() => {
             id = null;  // make job now available for next execution
         });

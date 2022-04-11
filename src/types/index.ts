@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import type { Nilable } from './internal';
+
 /**
  * A function, which checks if a job should be executed.
  *
@@ -114,18 +116,3 @@ export interface IJobExecutionContext {
  * @param {IJobExecutionContext} context The execution context.
  */
 export type JobAction = (context: IJobExecutionContext) => any;
-
-/**
- * A type, that can also be (null) or (undefined).
- */
-export type Nilable<T extends any = any> = Nullable<T> | Optional<T>;
-
-/**
- * A type, that can also be (null).
- */
-export type Nullable<T extends any = any> = T | null;
-
-/**
- * A type, that can also be (undefined).
- */
-export type Optional<T extends any = any> = T | undefined;

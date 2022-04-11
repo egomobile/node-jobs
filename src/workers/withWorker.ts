@@ -15,8 +15,9 @@
 
 import path from 'path';
 import { Worker } from 'worker_threads';
-import type { CheckIfShouldTickPredicate, DebugAction, JobAction, Nilable, Optional } from '../types';
-import { asAsync, getDebugActionSafe, toCheckIfShouldTickPredicateSafe } from '../utils/internal';
+import type { CheckIfShouldTickPredicate, DebugAction, JobAction } from '../types';
+import type { Nilable, Optional } from '../types/internal';
+import { asAsync, getDebugActionSafe, isNil, toCheckIfShouldTickPredicateSafe } from '../utils/internal';
 
 /**
  * Options for 'withWorker()' function.
@@ -86,7 +87,7 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
         }
 
         const worker = new Worker(filename, {
-            workerData: data,
+            workerData: toWorkerData(data),
             env: env || process.env
         });
 
@@ -118,4 +119,34 @@ export function withWorker(options: IWithWorkerOptions): JobAction {
             resolve();
         }
     });
+}
+
+function toWorkerData(val: any): any {
+    if (isNil(val)) {
+        return val;
+    }
+
+    if (typeof val === 'function') {
+        return toWorkerData(val());  // use as getter
+    }
+
+    if (Array.isArray(val)) {
+        return val.map((item) => toWorkerData(item));
+    }
+
+    if (typeof val === 'object') {  // create safe object?
+        const obj: any = {};
+
+        for (const [prop, value] of Object.entries(val)) {
+            obj[String(prop)] = toWorkerData(value);
+        }
+
+        return obj;
+    }
+
+    if (['boolean', 'number', 'string'].includes(typeof val)) {
+        return val;  // JSON compatible
+    }
+
+    return String(val);  // make string from it
 }
